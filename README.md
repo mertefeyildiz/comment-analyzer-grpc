@@ -6,7 +6,7 @@ This project provides a GRPC-based service for analyzing social media comments u
 
 - **BERT Classification**: Classifies comments as Claims, Counterclaims, Evidence, or Rebuttals.
 - **GPT-Neo Conclusion Generation**: Generates a detailed and well-reasoned conclusion based on the classified comments.
-- **GRPC Server**: Handles requests to analyze comments related to specific topics.
+- **GRPC Server and Client**: A GRPC server handles requests to analyze comments, and a client sends requests to the server for comment analysis.
 
 ## Installation
 
@@ -34,29 +34,38 @@ This project provides a GRPC-based service for analyzing social media comments u
 
 ## Usage
 
+### Running the GRPC Server
+
 1. Ensure that `topics.csv` and `opinions.csv` are available in the same directory. These files should contain the topics and related opinions for analysis.
-2. Run the GRPC server:
+2. Run the GRPC server using the following command:
     ```bash
-    python main.py
+    python grpc_server3.py
     ```
 3. The server will start on port 50051 and will be ready to handle requests.
 
-## API
+### Running the GRPC Client
 
-### AnalyzeComment
+1. Make sure the server is running.
+2. Use the client script to send a request to the server:
+    ```bash
+    python grpc_client.py
+    ```
+3. The client script will send a request to analyze a topic using a given `topic_id` and print the generated conclusion.
 
-- **Request**: A `topic_id` to identify the topic for analysis.
-- **Response**: A generated conclusion based on the arguments classified from related comments.
+### Example Client Code (`grpc_client.py`)
 
-## Models Used
+Here's an example of how the client interacts with the server:
 
-- **BERT**: Used for classifying comments into categories such as Claims, Counterclaims, Evidence, and Rebuttals.
-- **GPT-Neo**: Generates a coherent conclusion based on classified arguments.
+```python
+import grpc
+import grpc_service_pb2
+import grpc_service_pb2_grpc
 
-## Contributing
+# Connect to the server
+channel = grpc.insecure_channel('localhost:50051')
+stub = grpc_service_pb2_grpc.CommentAnalyzerStub(channel)
 
-Feel free to submit issues or pull requests if you have suggestions or improvements.
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+# Send a test topic_id (Example: '007ACE74B050' should exist in your data files)
+topic_id = "007ACE74B050"  # Example topic_id
+response = stub.AnalyzeComment(grpc_service_pb2.AnalyzeRequest(topic_id=topic_id))
+print(f"Conclusion: {response.conclusion}")
